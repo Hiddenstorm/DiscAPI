@@ -12,8 +12,7 @@ setup(
   download_url = 'https://github.com/user/reponame/archive/v_01.tar.gz',   
   keywords = ['Python', 'Discord', 'Simple'],   
   install_requires=[           
-          'websocket-client',
-          'json'
+          'websocket-client'
       ],
   classifiers=[
     'Development Status :: 3 - Alpha',      # "3 - Alpha", "4 - Beta", "5 - Production/Stable" 
