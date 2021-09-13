@@ -2,9 +2,8 @@ from distutils.core import setup
 import re
 
 version = ''
-with open('__init__.py') as f:
+with open('DiscAPI/__init__.py') as f:
   version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
-  print(version)
 
 setup(
   name = 'DiscAPI',         
