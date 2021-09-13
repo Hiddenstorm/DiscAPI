@@ -1,15 +1,21 @@
 from distutils.core import setup
+import re
+
+version = ''
+with open('__init__.py') as f:
+  version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
+  print(version)
 
 setup(
   name = 'DiscAPI',         
   packages = ['DiscAPI'],   
-  version = '0.1.3',      
+  version = version,      
   license='MIT',        
   description = 'A simple to use Python Library to make all kinds of discord bot.',   
-  author = 'HiddenStorm',                   
+  author = "HiddenStorm",                   
   author_email = 'schuck2345@gmail.com',     
   url = 'https://github.com/Hiddenstorm/DiscAPI',  
-  download_url = 'https://github.com/user/reponame/archive/v_01.tar.gz',   
+  download_url = 'https://github.com/Hiddenstorm/DiscAPI/archive/refs/tags/v{}.tar.gz'.format(version),   
   keywords = ['Python', 'Discord', 'Simple'],   
   install_requires=[           
           'websocket-client'
