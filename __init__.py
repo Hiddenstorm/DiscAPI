@@ -9,7 +9,7 @@ __title__ = 'DiscAPI'
 __author__ = 'HiddenStorm'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2021-present HiddenStorm'
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 __doc__ = "https://github.com/Hiddenstorm/DiscAPI"
 
 from .DiscAPI import Client

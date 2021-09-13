@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
   name = 'DiscAPI',         
   packages = ['DiscAPI'],   
-  version = '0.1.2',      
+  version = '0.1.3',      
   license='MIT',        
   description = 'A simple to use Python Library to make all kinds of discord bot.',   
   author = 'HiddenStorm',                   
