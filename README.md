@@ -14,22 +14,24 @@ pip install DiscAPI
 
 ## Example
 
-.. code:: py
+```py
     
-    import DiscAPI
-    
-    client = DiscAPI.Client()
-    
-    @client.event("on_ready")
-    async def on_ready():
-        await client.set_status("online", "Counting sheep.. zzz")
-        
-    @client.event("on_message")
-    async def on_message(mess):
-        if mess.content=="!hey":
-            await mess.channel.send("Hi {}!".format(mess.author.name))
-            
-    client.run(Token, Secret)
+import DiscAPI
+
+client = DiscAPI.Client()
+
+@client.event("on_ready")
+async def on_ready():
+    await client.set_status("online", "Counting sheep.. zzz")
+
+@client.event("on_message")
+async def on_message(mess):
+    if mess.content=="!hey":
+        await mess.channel.send("Hi {}!".format(mess.author.name))
+
+client.run(Token, Secret)
+
+```
 
 ## Developement
 
