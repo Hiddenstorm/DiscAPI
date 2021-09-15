@@ -15,7 +15,6 @@ pip install DiscAPI
 ## Example
 
 ```py
-    
 import DiscAPI
 
 client = DiscAPI.Client()
