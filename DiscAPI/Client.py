@@ -2,7 +2,7 @@ import asyncio
 import time
 import threading
 
-from .HTTPSCLIENT import HTTPClient
+from .HTTPSCLIENT import HTTPClient, op
 from .Log import Log
 from .Guild import Guild
 
@@ -57,9 +57,9 @@ class Client:
         Events
         ------
 
-        on_ready: gets called when the client is ready to interact with discord.
+        on_ready(): gets called when the client is ready to interact with discord.
 
-        on_message: gets called when a message gets posted into a discord guild.
+        on_message(): gets called when a message gets posted into a discord guild and includes a message object in the function parameters.
 
         Example
         -------
@@ -99,8 +99,52 @@ class Client:
             for Method in self.handlers[type]:
                 await Method(*args, **kwargs)
 
+    async def set_status(self, state, activity=""):
+        """
+        This function is used to set the clients status and activity.
+        Because of the way discord works, it might take a while to update status and activity.
+
+        Parameters
+        ----------
+
+        Required: str State:
+            "online" / "idle" / "dnd" / "invisible"
+            something else wont work and results in an error.
+        Currently required: str Activity:
+            Example: "Counting sheep... zzz"
+        """
+        
+        Log.Debug(self, "Setting status to {} and activity to {}...".format(state, activity))
+        self.HTTPClient.Send_API(op.Status_update(state, activity))
+        return
+
+    async def get_guild(self, id):
+        """
+        This function returns a guild object.
+
+        Parameters
+        ----------
+        Required: guild_id
+            The guild id of the desired guild
+        """
+        
+        guild = self.HTTPClient.get_guild(id)
+        return guild
+
+    async def get_channel(self, id):
+        """
+        This function returns a channel object.
+        
+        Parameters
+        ----------
+        Required: guild_id
+            The channel id of the desired channel
+        """
+
+        channel = self.HTTPClient.get_channel(id)
+        return channel
+
     async def get_guilds(self) -> list[Guild]:
-        #: :type: list of Guild
         """
         This function will return a list with all guilds your client is in.
         """
