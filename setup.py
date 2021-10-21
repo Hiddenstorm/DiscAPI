@@ -10,7 +10,7 @@ setup(
   packages = ['DiscAPI'],   
   version = version,      
   license='MIT',        
-  description = 'A simple to use Python Library to make all kinds of discord bot.',   
+  description = 'A simple to use Python Library to make all kinds of discord bot. For more information visit HiddenStorm.de',   
   author = "HiddenStorm",                   
   author_email = 'schuck2345@gmail.com',     
   url = 'https://github.com/Hiddenstorm/DiscAPI',  
