@@ -2,7 +2,7 @@ import asyncio
 import time
 import threading
 
-from .HTTPSCLIENT import HTTPClient, op
+from .HTTPSCLIENT import HTTPClient, opcode
 from .Log import Log
 from .Guild import Guild
 
@@ -42,10 +42,12 @@ class Client:
         self.Token=TOKEN
         self.Secret=SECRET
         self.HTTPClient = HTTPClient(self)
-        self.HTTPClient.connect()
+        self.GatewayThread = threading.Thread(target=self.HTTPClient.connect)
+        self.GatewayThread.setName("Gateway")
+        self.GatewayThread.start()
         self.UptimeThread = threading.Thread(target=self.counttime)
+        self.UptimeThread.setName("Uptime")
         self.UptimeThread.start()
-        asyncio.run(self.call_event("on_ready"))
         self.Loop.run_forever()
         
     def event(self, method):
@@ -69,7 +71,6 @@ class Client:
         >>>     print("Bot is logged in.")
         """
         
-        Log.Debug(self, "Registered " + method + " as an event.")
         def registerhandler(handler):
             if method in self.handlers:
                 self.handlers[method].append(handler)
@@ -89,7 +90,7 @@ class Client:
             self.uptime += 1
             time.sleep(1)
 
-    async def call_event(self, type, *args, **kwargs):
+    def call_event(self, type, *args, **kwargs):
         """
         This is not meantto be used outside the package!
         """
@@ -97,7 +98,7 @@ class Client:
         Log.Debug(self, "Calling " + type + " event.")
         if type in self.handlers:
             for Method in self.handlers[type]:
-                await Method(*args, **kwargs)
+                asyncio.run(Method(*args, **kwargs))
 
     async def set_status(self, state, activity=""):
         """
@@ -115,7 +116,7 @@ class Client:
         """
         
         Log.Debug(self, "Setting status to {} and activity to {}...".format(state, activity))
-        self.HTTPClient.Send_API(op.Status_update(state, activity))
+        self.HTTPClient.Send_API(opcode.Status_update(state, activity))
         return
 
     async def get_guild(self, id):
@@ -156,9 +157,7 @@ class Client:
         This function will return an integer that represents how many guilds the bot is currently in.
         """
         
-        guilds = 0
-        for guild in self.guilds:
-            guilds+=1
+        guilds = len(self.guilds)
 
         return guilds
 

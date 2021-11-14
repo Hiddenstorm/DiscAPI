@@ -13,64 +13,43 @@ class HTTPClient:
     def __init__(self, client):
         #done
         self.client = client
-        self.websocket = websocket.WebSocket()
         self.BaseUrl = "https://discord.com/api/v9/"
         self.headers = {"Authorization" : "Bot {}".format(self.client.Secret)}
         self.gatewayurl = "wss://gateway.discord.gg/?v=9&encoding=json"
 
     def connect(self):
-        #done
-        self.websocket.connect(self.gatewayurl)
-        Log.Debug(self.client, "Connected to Websocket")
-        
-        self.Interval = json.loads(self.websocket.recv())["d"]["heartbeat_interval"]
-        Log.Debug(self.client, "Received GateWay Info.")
-        Log.Debug(self.client, "Heartbeat Interval set to " + str(self.Interval) + "ms")
+        Log.Debug(self.client, "Connecting client to discord gateway")
+        websocket.enableTrace(False)
+        self.websocket = websocket.WebSocketApp(
+            url=self.gatewayurl,
+            on_data=self.receive_payload,
+            on_close=self.close_event
+        )
+        Log.Debug(self.client, "Identifying as client")
+        self.websocket.run_forever()
 
-        #send identifying OP
-        self.websocket.send(op.identify(self.client.Token))
-
-        #receiving info
-        self.StartInfo = self.websocket.recv()
-        Log.Debug(self.client, "Successfully identified GateWay and received Start info.")
-        Log.Debug(self.client, "Collecting guild info in the process...")
-        api = threading.Thread(target=self.Receive_API)
-        api.start()
-        self.HeartBeatThread = threading.Thread(target=self.HeartBeat)
-        self.HeartBeatThread.start()
-        return
-
-    def HeartBeat(self):
-        Log.Debug(self.client, "Sending initial HeartBeat")
-        self.websocket.send(op.heartbeat())
-
-        #Looping Heartbeat
-        while True:
-            time.sleep(self.Interval/1000-1)
-            Log.Debug(self.client, "Sending HeartBeat")
-            self.websocket.send(op.heartbeat())
-
-    def Receive_API(self):
-        #not done
-        raw = self.websocket.recv()
-        
-        #Start new Receiving threads
-        api = threading.Thread(target=self.Receive_API)
-        api.start()
-        
-        signal = json.loads(raw)
+    def receive_payload(self, websocket, message, *args, **kwargs):
+        signal = json.loads(message)
         op = signal["op"]
+        name = signal["t"]
+        data = signal["d"]
+        Log.Debug(self.client, "Received an OPCode " + str(op) + ":" + str(name))
 
-        Log.Debug(self.client, "Received an OPCode " + str(op))
         #Dispatch
         if op == 0:
-            name = signal["t"]
-            data = signal["d"]
+            if name == 'READY':
+                Log.Debug(self.client, "Marked as ready")
+                self.HeartbeatThread = threading.Thread(target=self.HeartBeat)
+                self.HeartbeatThread.setName("Heart")
+                self.HeartbeatThread.start()
+                self.client.call_event("on_ready")
 
-            if name == "GUILD_CREATE":
+            elif name == "GUILD_CREATE":
+                Log.Debug(self.client, "Appending guild")
                 self.client.guilds.append(Guild(data))
 
-            if name == "MESSAGE_CREATE":
+            elif name == "MESSAGE_CREATE":
+                Log.Debug(self.client, "Received message")
                 message = Message(data, self)
                 asyncio.run(self.client.call_event("on_message", message))
 
@@ -82,8 +61,27 @@ class HTTPClient:
         elif op == 9:
             pass
 
-        elif signal["op"] == 11:
+        elif op == 11:
             Log.Debug(self.client, "Received HeartBeat")
+
+        elif op == 10:
+            Log.Debug(self.client, "Recieved 'Hello' Payload")
+            self.Interval = signal["d"]['heartbeat_interval']
+            self.websocket.send(opcode.identify(self.client.Secret))
+
+    def HeartBeat(self):
+        Log.Debug(self.client, "Sending initial HeartBeat")
+        self.websocket.send(opcode.heartbeat())
+
+        while True:
+            time.sleep(self.Interval/1000-1)
+            Log.Debug(self.client, "Sending HeartBeat")
+            self.websocket.send(opcode.heartbeat())
+
+    def close_event(self, ws, encoded, decoded):
+        Log.Debug(self.client, "Websocket closed")
+
+#--------------------------------------------------------------------------------
 
     def Send_API(self, dict):
         #done
@@ -114,23 +112,21 @@ class HTTPClient:
         info = raw.json()
         return info
 
-class op:
+class opcode:
     def identify(Token):
-        dict = '''
-        {
+        b = {
             "op": 2,
             "d": {
-                "token" : "''' + Token + '''",
-                "intents":513,
-                "properties":{
-                    "$os":"linux",
-                    "$browser":"my_library",
-                    "$device":"my_library"
-                    }
+                "token": str(Token),
+                "intents": 513,
+                "properties": {
+                    "$os": "linux",
+                    "$browser": "my_library",
+                    "$device": "my_library"
                 }
             }
-        '''
-        return str(dict)
+        }
+        return str(str(json.dumps(b)))
     
     def heartbeat():
         dict = '''
