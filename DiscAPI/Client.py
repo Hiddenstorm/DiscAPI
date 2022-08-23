@@ -2,7 +2,7 @@ import asyncio
 import time
 import threading
 
-from .HTTPSCLIENT import HTTPClient, opcode
+from .APISocket import Connection, Connection, opcode
 from .Log import Log
 from .Guild import Guild
 
@@ -24,6 +24,7 @@ class Client:
         self.uptime = 0
         self.guilds = []
 
+
     def run(self, TOKEN, SECRET):
         """
         This function starts the client.
@@ -41,8 +42,8 @@ class Client:
 
         self.Token=TOKEN
         self.Secret=SECRET
-        self.HTTPClient = HTTPClient(self)
-        self.GatewayThread = threading.Thread(target=self.HTTPClient.connect)
+        self.con = Connection(self)
+        self.GatewayThread = threading.Thread(target=self.con.connect)
         self.GatewayThread.setName("Gateway")
         self.GatewayThread.start()
         self.UptimeThread = threading.Thread(target=self.counttime)
@@ -50,6 +51,7 @@ class Client:
         self.UptimeThread.start()
         self.Loop.run_forever()
         
+
     def event(self, method):
         """
         Putting
@@ -80,6 +82,7 @@ class Client:
 
         return registerhandler
 
+
     def counttime(self):
         """
         This is not meantto be used outside the package!
@@ -100,6 +103,7 @@ class Client:
             for Method in self.handlers[type]:
                 asyncio.run(Method(*args, **kwargs))
 
+
     async def set_status(self, state, activity=""):
         """
         This function is used to set the clients status and activity.
@@ -119,6 +123,7 @@ class Client:
         self.HTTPClient.Send_API(opcode.Status_update(state, activity))
         return
 
+
     async def get_guild(self, id):
         """
         This function returns a guild object.
@@ -131,6 +136,7 @@ class Client:
         
         guild = self.HTTPClient.get_guild(id)
         return guild
+
 
     async def get_channel(self, id):
         """
@@ -145,12 +151,14 @@ class Client:
         channel = self.HTTPClient.get_channel(id)
         return channel
 
+
     async def get_guilds(self) -> list[Guild]:
         """
         This function will return a list with all guilds your client is in.
         """
         
         return self.guilds
+
 
     async def get_guild_count(self) -> int:
         """
@@ -160,6 +168,7 @@ class Client:
         guilds = len(self.guilds)
 
         return guilds
+
 
     async def get_uptime(self) -> int:
         """
